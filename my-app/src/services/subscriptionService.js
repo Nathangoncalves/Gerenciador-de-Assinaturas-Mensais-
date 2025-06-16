@@ -1,26 +1,30 @@
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
-
-const colRef = collection(db, 'subscriptions');
-
-export function onSubscriptionsSnapshot(onNext) {
+  
+  const colRef = collection(db, 'subscriptions');
+  
+  // Listener em tempo real
+  export function onSubscriptionsSnapshot(callback) {
     const q = query(colRef, orderBy('dataRenovacao', 'asc'));
-    return onSnapshot(q, snap => {
-        const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        onNext(list);
+    return onSnapshot(q, snapshot => {
+      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      callback(list);
     });
-}
-
-export async function createSubscription(data) {
+  }
+  
+  // Criar nova assinatura
+  export async function createSubscription(data) {
     return addDoc(colRef, data);
-}
-
-export async function  updateSubscription(id, data) {
+  }
+  
+  // Atualizar assinatura existente
+  export async function updateSubscription(id, data) {
     const ref = doc(db, 'subscriptions', id);
     return updateDoc(ref, data);
-}
-
-export async function  deleteSubscription(id) {
+  }
+  
+  // Excluir assinatura
+  export async function deleteSubscription(id) {
     const ref = doc(db, 'subscriptions', id);
     return deleteDoc(ref);
-}
+  }

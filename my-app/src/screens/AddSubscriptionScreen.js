@@ -1,60 +1,120 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Pressable } from 'react-native';
-import { createSubscription, updateSubscription } from '../services/subscriptionService';
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  Pressable,
+  StyleSheet,
+  Platform
+} from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import {
+  createSubscription,
+  updateSubscription
+} from '../services/subscriptionService';
 
 export default function AddSubscriptionScreen({ route, navigation }) {
+  const existing = route.params?.subscription;
+  const [nome, setNome] = useState(existing?.nome || '');
+  const [valor, setValor] = useState(existing?.valor?.toString() || '');
+  const [categoria, setCategoria] = useState(existing?.categoria || '');
+  const [dataRenovacao, setDataRenovacao] = useState(
+    existing?.dataRenovacao
+      ? new Date(existing.dataRenovacao.seconds * 1000)
+      : new Date()
+  );
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-    const handleSave = async () => {
-        const payload = { nome, valor, dataRenovacao, categoria };
-        if (existing) {
-            await updateSubscription(existing.id, payload);
-        } else {
-            await createSubscription(payload);
-        }
-        navigation.goBack();
-    };
+  const handleSave = async () => {
+    const payload = { nome, valor: parseFloat(valor), categoria, dataRenovacao };
+    if (existing) await updateSubscription(existing.id, payload);
+    else await createSubscription(payload);
+    navigation.goBack();
+  };
 
-    return (
-        <View style={{ flex: 1, padding: 16}}>
-            <TextInput
-            placeholder='Nome da assinatura'
-            value={nome}
-            onChange={setNome}
-            style={{ borderBottomWidth: 1, marginBottom: 12}}
-            />
-            
-            <TextInput
-            placeholder="Valor mensal"
-            value={valor}
-            onChangeText={setValor}
-            keyboardType="numeric"
-            style={{ borderBottomWidth: 1, marginBottom: 12}}
-            />
+  const onChangeDate = (_, selectedDate) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) setDataRenovacao(selectedDate);
+  };
 
-            <TextInput 
-            placeholder="Categoria"
-            value={categoria}
-            onChangeText={setCategoria}
-            style={{ borderBottomWidth: 1, marginBottom: 12}}
-            />
+  return (
+    <View style={styles.container}>
+      <TextInput
+        placeholder="Nome da assinatura"
+        value={nome}
+        onChangeText={setNome}
+        style={styles.input}
+      />
 
-            <Pressable onPress={() => setShowDatePicker(true)} style={{ marginBottom: 12}}>
-                <Text>Data de Renovação: {dataRenovacao.toLocaleDataString()}</Text>
-            </Pressable>
+      <TextInput
+        placeholder="Valor mensal"
+        value={valor}
+        onChangeText={setValor}
+        keyboardType="numeric"
+        style={styles.input}
+      />
 
-            {showDatePicker && (
-                <DataTinePicker
-                value={dataRenovacao}
-                mode="date"
-                display="default"
-                onChange={onChangeDate}
-                />
-            )}
-                <Button 
-                tittle={existing ? 'Atualizar Assinatura' : 'Adicionar Assinatura'}
-                onPress={handleSave}
-                disabled={!nome || !valor || !categoria }
-                />
-        </View>
-    );
+      <TextInput
+        placeholder="Categoria"
+        value={categoria}
+        onChangeText={setCategoria}
+        style={styles.input}
+      />
+
+      <Pressable onPress={() => setShowDatePicker(true)} style={styles.dateTrigger}>
+        <Text>Data de Renovação: {dataRenovacao.toLocaleDateString()}</Text>
+      </Pressable>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={dataRenovacao}
+          mode="date"
+          display="default"
+          onChange={onChangeDate}
+        />
+      )}
+
+      <View style={styles.buttonWrapper}>
+        <Button
+          title={existing ? 'Atualizar' : 'Adicionar'}
+          onPress={handleSave}
+          disabled={!nome || !valor || !categoria}
+        />
+      </View>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16 },
+  input: {
+    borderBottomWidth: 1,
+    marginBottom: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 4,
+    backgroundColor: '#fff',
+    ...Platform.select({
+      web: { boxShadow: '0px 1px 3px rgba(0,0,0,0.1)' },
+      default: {},
+    }),
+  },
+  dateTrigger: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#fafafa',
+    borderRadius: 4,
+    ...Platform.select({
+      web: { boxShadow: '0px 1px 3px rgba(0,0,0,0.1)' },
+      default: {},
+    }),
+  },
+  buttonWrapper: {
+    marginTop: 24,
+    ...Platform.select({
+      web: { boxShadow: '0px 2px 4px rgba(0,0,0,0.1)' },
+      default: {},
+    }),
+  },
+});
