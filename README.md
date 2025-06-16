@@ -19,6 +19,7 @@ Aplicativo React Native (Expo) para gerenciar assinaturas mensais usando Firebas
 2. Acesse o diretório do projeto:
 ```bash
 cd Gerenciador-de-Assinaturas-Mensais-
+cd my-app
 ```
 3. Instale as dependências do projeto:
 ```bash
@@ -28,6 +29,11 @@ npm install
 ```bash
 npx expo install react-native-reanimated
 ```
+5. Rode:
+```bash
+npx expo start --clear
+```
+
 ## Uso
 
 1. Na home, visualize o gasto total e as próximas renovações.
